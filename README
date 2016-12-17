@@ -1,0 +1,1 @@
+This is a PHP class that can create files for JavaScript objects and PHP Classes, using argument values to dynamically build any necessary 'getter' and 'setter' functions/methods.
