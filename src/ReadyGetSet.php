@@ -1,9 +1,12 @@
 <?php
 
+namespace GGG;
+
 class ReadyGetSet
 {
 
   private static $_result;
+  private static $_attributes;
   private static $_language;
   private static $_prefix;
 
@@ -41,16 +44,74 @@ class ReadyGetSet
 
           case 'php':
             $parentKeys = static::$_prefix . str_replace( '-', '->', $parent );
+
+/**
+            if( is_string( static::$_prefix ) && strlen( static::$_prefix ) > 1 )
+            {
+              $indent = str_repeat( ' ', ( $level * 2) + 2 );
+              if( $level === 0 )
+              {
+                $mainKey = static::$_prefix;
+                static::$_attributes .=<<<EOA
+{$indent}{$indent}'{$key}' => NULL,
+
+EOA;
+
+              }
+              if( $level === 1 )
+              {
+                
+                $mainKey = explode( '->', $parentKey );
+                $mainKey = $mainKey[ count( $mainKey ) - 1 ];
+                if(! empty( $mainKey ) )
+                {
+                  static::$_attributes .=<<<EOA
+parent: {$parent}
+parentKey: {$parentKey}
+{$indent}'{$mainKey}' => [
+{$indent}{$indent}'{$key}' => NULL,
+
+EOA;
+
+                }
+                static::$_attributes .=<<<EOA
+parent: {$parent}
+parentKey: {$parentKey}
+{$indent}{$indent}'{$key}' => NULL
+{$indent}],
+
+EOA;
+
+              }
+              if( $level === count( $array ) - 1 )
+              {
+                static::$_attributes .=<<<EOA
+
+  ];
+EOA;
+              }
+              $level++;
+            }
+            else
+            {
+              static::$_attributes .=<<<EOA
+  private \${$key};
+
+EOA;
+
+            }
+**/
             static::$_result .=<<<EOP
 
-// Set method for "{$key}" property
-public function set{$ucKey}({$arg}){
-  \$this->{$parentKeys}{$key} = {$arg};
-}
-// Get method for "{$key}" property
-public function get{$ucKey}(){
-  return \$this->{$parentKeys}{$key};
-}
+  // Set method for "{$key}" property
+  public function set{$ucKey}({$arg}){
+    \$this->{$parentKeys}{$key} = {$arg};
+  }
+
+  // Get method for "{$key}" property
+  public function get{$ucKey}(){
+    return \$this->{$parentKeys}{$key};
+  }
 
 EOP;
 
@@ -74,52 +135,66 @@ EOP;
   {
     if( static::_recurse( $arr ) )
     {
-      return static::$_result;
+      return [
+        'head' => static::$_attributes,
+        'body' => static::$_result
+      ];
     }
     return 'There was an error during the "_recurse" method, called within the "_makephp" method.';
   }
 
-  private static function wrapInPhpClass( $class_name, $content )
+  private static function wrapInPhpClass( $classname, $namespace, $content )
   {
-    $class_name = ucwords( $class_name );
+    $phptag = html_entity_decode( '&lt;?php' );
+    $namespace = ( is_null( $namespace ) ) ? NULL : "\nnamespace " . preg_replace( '#[\\\\]+#', '\\', $namespace );
+    $namespace = ( $namespace === NULL ) ? '' : ( preg_match( '#[\\\\]+$#', $namespace ) ) ? preg_replace( '#[\\\\]+$#', ";\n", $namespace ) : $namespace . ";\n";
+    $classname = ucwords( $classname );
     $tmpStr =<<<EOH
-class {$class_name}
+{$phptag}
+{$namespace}
+class {$classname}
 {
-  {$content}
+  {$content['head']}
+  public function __construct()
+  {
+    return \$this;
+  }
+  {$content['body']}
 }
 EOH;
 
     return $tmpStr;
   }
 
-  public static function go( $outputLanguage, $associativeArray, $prefix = '', $writeToFile = false, $classname = NULL )
+  public static function go( $outputLanguage, $associativeArray, $prefix = '', $writeToFile = false, $classname = NULL, $namespace = NULL )
   {
     static::$_result = '';
+    static::$_attributes = ( is_string( $prefix ) && strlen( $prefix ) > 0 ) ? "\n" . '  private $' . $prefix . ' = [];' . "\n" : NULL;
     static::$_language = strtolower( $outputLanguage );
     static::$_prefix = $prefix;
-    $resultStr = 'Nothing has been created.';
+    $result = 'Nothing has been created.';
     $staticMethod = '_' . strtolower( $outputLanguage );
     if( method_exists( 'ReadyGetSet', $staticMethod ) )
     {
-       $resultStr = static::{$staticMethod}( $associativeArray );
+       $result = static::{$staticMethod}( $associativeArray );
     }
     else
     {
-      $resultStr = 'Static method [' . $staticMethod . '] does not exist.';
+      $result = 'Static method [' . $staticMethod . '] does not exist.';
     }
     if( $writeToFile === true )
     {
       if( $outputLanguage === 'php' && isset( $classname ) && is_string( $classname ) )
       {
-        $resultStr = static::wrapInPhpClass( $classname, $resultStr );
+        $result = static::wrapInPhpClass( $classname, $namespace, $result );
       }
       $filename = ( isset( $classname ) && is_string( $classname ) ) ? ucwords( $classname ) : ucwords( $prefix );
       $filename .= '.' . $outputLanguage;
-      file_put_contents( $filename, $resultStr );
+      file_put_contents( $filename, $result );
     }
     else
     {
-      echo $resultStr;
+      echo $result;
     }
   }
 
@@ -151,6 +226,7 @@ EOH;
           'focus' => 0,
           'gold' => 0
         ];
-
-ReadyGetSet::go( 'php', $stats, 'stats', true, 'Player' );
 **/
+
+//ReadyGetSet::go( 'php', $stats, 'stats', true, 'Player', 'Test\\Namespace\\Fake\\\\' );
+
