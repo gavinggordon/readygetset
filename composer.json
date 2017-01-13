@@ -1,0 +1,53 @@
+{
+	"name": "gavinggordon/readygetset",
+	"description": "A PHP class which provides developers with the means to create PHP class files quickly and dynamically, especially classes that will be utilizing 'getter' and 'setter' methods.",
+	"license": "MIT",
+	"keywords": [
+	  	"v1.0.0",
+		"php",
+		"getset",
+		"readygetset",
+		"setter",
+		"setter method",
+		"getter",
+		"getter method",
+		"file",
+		"file template",
+		"file creation",
+		"helper",
+		"template",
+		"command line",
+		"cli",
+		"tools"
+	],
+	"authors": [
+		{
+			"name": "Gavin G Gordon",
+			"email": "support@gavingordon.com",
+			"homepage": "https://gavingordon.com",
+			"role": "Developer"
+		}
+	],
+	"version": "1.0.0",
+	"minimum-stability": "stable",
+	"homepage": "http://readygetset.gavingordon.com",
+	"support": {
+		"issues": "https://github.com/gavinggordon/readygetset/issues",
+		"source": "https://github.com/gavinggordon/readygetset"
+	},
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/gavinggordon/readygetset.git"
+		}
+	],
+	"require": {},
+	"require-dev": {
+		"phpunit/phpunit": "4.0.*"
+	},
+	"autoload": {
+			"psr-4": {
+				"GGG\\": "src"
+		}
+	}
+}
