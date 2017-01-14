@@ -10,7 +10,7 @@
 			  stopOnFailure="true" 
 			  syntaxCheck="false">
 	<testsuites>
-		<testsuite name="HtmlEntities Test Suite">
+		<testsuite name="ReadyGetSet Test Suite">
       		<directory suffix=".php">./tests/</directory>
     	</testsuite>
 	</testsuites>

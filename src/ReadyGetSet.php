@@ -140,7 +140,7 @@ EOP;
         'body' => static::$_result
       ];
     }
-    return 'There was an error during the "_recurse" method, called within the "_makephp" method.';
+    return 'There was an error during the "_recurse" method, called within the "_php" method. "$arr" is not an array: ' . gettype( $arr );
   }
 
   private static function wrapInPhpClass( $classname, $namespace, $content )
@@ -166,7 +166,7 @@ EOH;
     return $tmpStr;
   }
 
-  public static function go( $outputLanguage, $associativeArray, $prefix = '', $writeToFile = false, $classname = NULL, $namespace = NULL )
+  public static function go( $outputLanguage, $associativeArray, $prefix = '', $saveToPath = false, $classname = NULL, $namespace = NULL )
   {
     static::$_result = '';
     static::$_attributes = ( is_string( $prefix ) && strlen( $prefix ) > 0 ) ? "\n" . '  private $' . $prefix . ' = [];' . "\n" : NULL;
@@ -174,23 +174,25 @@ EOH;
     static::$_prefix = $prefix;
     $result = 'Nothing has been created.';
     $staticMethod = '_' . strtolower( $outputLanguage );
-    if( method_exists( 'ReadyGetSet', $staticMethod ) )
+    if( method_exists( 'GGG\ReadyGetSet', $staticMethod ) )
     {
-       $result = static::{$staticMethod}( $associativeArray );
+       $result = static::{$staticMethod}( json_decode( str_replace( '\"', '"', $associativeArray ), true ) );
     }
     else
     {
       $result = 'Static method [' . $staticMethod . '] does not exist.';
     }
-    if( $writeToFile === true )
+    if( is_string( $saveToPath ) && strlen( $saveToPath ) > 1 )
     {
       if( $outputLanguage === 'php' && isset( $classname ) && is_string( $classname ) )
       {
         $result = static::wrapInPhpClass( $classname, $namespace, $result );
       }
+	  $saveToPath = ( preg_match( '#[\/\\\\]$#', $saveToPath ) ) ? $saveToPath : $saveToPath . DIRECTORY_SEPARATOR;
       $filename = ( isset( $classname ) && is_string( $classname ) ) ? ucwords( $classname ) : ucwords( $prefix );
       $filename .= '.' . $outputLanguage;
-      file_put_contents( $filename, $result );
+  	  $saveFilePath = ( file_exists( $saveToPath ) && is_dir( $saveToPath ) ) ? $saveToPath . $filename : $filename;
+      file_put_contents( $saveFilePath, $result );
     }
     else
     {
@@ -199,34 +201,4 @@ EOH;
   }
 
 }
-
-/**
-        $stats = [
-          'name' => '',
-          'avatar' => '',
-          'level' => 0,
-          'discipline' => '',
-          'skills' => [
-            'active' => [
-              'attacks' => [],
-              'spells' => []
-            ],
-            'passive' => [
-              'offense' => [],
-              'defense' => []
-            ]
-          ],
-          'xp' => 0,
-          'hp' => 50,
-          'mp' => 0,
-          'ap' => 0,
-          'strength' => 0,
-          'intelligence' => 0,
-          'agility' => 0,
-          'focus' => 0,
-          'gold' => 0
-        ];
-**/
-
-//ReadyGetSet::go( 'php', $stats, 'stats', true, 'Player', 'Test\\Namespace\\Fake\\\\' );
 

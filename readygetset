@@ -1,0 +1,73 @@
+#! /usr/bin/php
+<?php
+
+$options = [];
+
+foreach( $argv as $arg )
+{
+	if( preg_match( '/\-\-(\w*)\=?(.+)?/', $arg ) )
+	{
+		preg_match( '/\-\-(\w*)\=?(.+)?/', $arg, $value );
+		if( $value && isset( $value[1] ) && $value[1] )
+		{
+			$options[ $value[1] ] = isset( $value[2] ) ? $value[2] : NULL;
+		}
+	}
+/**
+	if( preg_match( '/\-(\w*)/', $arg ) )
+	{
+		preg_match( '/\-(\w*)/', $arg, $value );
+		if( $value && isset( $value[1] ) && (! is_int( $value[1] ) ) && $value[1] !== TRUE && $value[1] !== FALSE )
+		{
+			$options[ $value[1] ] = TRUE;
+		}
+	}
+**/
+}
+
+$errs = [];
+
+$__filetype = ( isset( $options['filetype'] ) ) ? $options['filetype'] : NULL;
+$__stats = ( isset( $options['stats'] ) ) ? $options['stats'] : NULL;
+$__prefix = ( isset( $options['prefix'] ) ) ? $options['prefix'] : NULL;
+$__savetopath = ( isset( $options['saveToPath'] ) ) ? $options['saveToPath'] : FALSE;
+$__classname = ( isset( $options['classname'] ) ) ? $options['classname'] : NULL;
+$__namespace = ( isset( $options['namespace'] ) ) ? $options['namespace'] : NULL;
+
+if( $__filetype === NULL )
+{
+	$msg = '"filetype" is a required argument. Allowed values are: php, js';
+	array_push( $errs, $msg );
+}
+if( $__stats === NULL )
+{
+	$msg = '"stats" is a required argument. Allowed values are: {"key":"value"}, {"key":{"prop":"value"}}, ...';
+	array_push( $errs, $msg );
+}
+if( $__prefix === NULL )
+{
+	$__prefix = '';
+}
+if( $__classname === NULL )
+{
+	$msg = '"classname" is a required argument. Allowed values are: "testclass", "Testclass", ...';
+	array_push( $errs, $msg );
+}
+
+if( count( $errs ) > 0 )
+{
+	foreach( $errs as $msg )
+	{
+		$msg = $msg . "\n";
+		print_r( $msg ); 
+	}
+	exit( 1 );
+}
+
+include( './vendor/autoload.php' );
+
+use GGG\ReadyGetSet;
+
+ReadyGetSet::go( $__filetype, $__stats, $__prefix, $__savetopath, $__classname, $__namespace );
+
+?>
